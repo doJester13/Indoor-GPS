@@ -29,7 +29,8 @@ class DB_Functions {
  
         // check for successful store
         if ($result) {
-            return $true;
+            echo $result;
+            return true;
         } else {
             return false;
         }
