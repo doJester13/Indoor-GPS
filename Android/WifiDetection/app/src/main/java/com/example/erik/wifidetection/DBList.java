@@ -7,15 +7,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import java.io.IOException;
 
 public class DBList extends AppCompatActivity {
 
     private DbManager db=null;
     private CursorAdapter adapter;
     private ListView listview=null;
+    Context ctx;
+
 
     private View.OnClickListener clickListener=new View.OnClickListener()
     {
@@ -45,6 +50,8 @@ public class DBList extends AppCompatActivity {
             }
         });*/
 
+
+        ctx = this;
         db=new DbManager(this);
         TextView dbpath=(TextView) findViewById(R.id.path);
         dbpath.setText(DBHelper.DBPATH);
@@ -94,6 +101,24 @@ public class DBList extends AppCompatActivity {
         };
 
         listview.setAdapter(adapter);
+
+        Button upload = (Button)findViewById(R.id.upload);
+        upload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    insertSurv("prova","prova","prova","prova","prova","prova");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void insertSurv(String man, String prod, String date, String lat, String lon, String fingerprint) throws IOException {
+
+        PostTask pt = new PostTask(ctx);
+        pt.execute(man,prod,date,lat,lon,fingerprint);
     }
 }
 

@@ -13,9 +13,15 @@
         android:id="@+id/path"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/upload"
+        android:layout_below="@+id/path"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/upload"/>
     <ListView
         android:id="@+id/DB_Entry"
-        android:layout_below="@+id/path"
+        android:layout_below="@+id/upload"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
 </RelativeLayout>
