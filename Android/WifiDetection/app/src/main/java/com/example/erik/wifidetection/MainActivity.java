@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     MapView map;
     Marker m;
     Boolean init;
-
+    GeoPoint point;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,12 +147,12 @@ public class MainActivity extends AppCompatActivity {
 
 
                 Toast.makeText(context,"Data captured",Toast.LENGTH_SHORT).show();
-                Log.v("DATA", MANUFACTER);
+                /*Log.v("DATA", MANUFACTER);
                 Log.v("DATA",PRODUCT);
                 Log.v("DATA",ts);
                 Log.v("DATA",String.valueOf(mlat));
                 Log.v("DATA",String.valueOf(mlon));
-                Log.v("DATA", fingerprint);
+                Log.v("DATA", fingerprint);*/
 
                 db.save(MANUFACTER, PRODUCT, ts, String.valueOf(mlat),String.valueOf(mlon), fingerprint);
 
@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean longPressHelper(GeoPoint geoPoint) {
-
+                point = geoPoint;
                 mlat = geoPoint.getLatitude();
                 mlon = geoPoint.getLongitude();
                 if (map.getOverlays().contains(m)){
@@ -248,6 +248,52 @@ public class MainActivity extends AppCompatActivity {
         map.getOverlays().add(OverlayEventos);
         //Refreshing the map to draw the new overlay
         map.invalidate();
+
+        Button up = (Button) findViewById(R.id.buttonUp);
+        Button down = (Button) findViewById(R.id.buttonDown);
+        Button right = (Button) findViewById(R.id.buttonRight);
+        Button left = (Button) findViewById(R.id.buttonLeft);
+
+        up.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                point.setLatitudeE6(point.getLatitudeE6() + (int) (0.00001 * 1E6));
+                m.setPosition(point);
+                m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                map.getOverlays().add(m);
+                map.invalidate();
+            }
+        });
+        down.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                point.setLatitudeE6(point.getLatitudeE6()-(int)(0.00001*1E6));
+                m.setPosition(point);
+                m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                map.getOverlays().add(m);
+                map.invalidate();
+            }
+        });
+        right.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                point.setLongitudeE6(point.getLongitudeE6() + (int) (0.00001 * 1E6));
+                m.setPosition(point);
+                m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                map.getOverlays().add(m);
+                map.invalidate();
+            }
+        });
+        left.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                point.setLongitudeE6(point.getLongitudeE6() - (int)(0.00001*1E6));
+                m.setPosition(point);
+                m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                map.getOverlays().add(m);
+                map.invalidate();
+            }
+        });
 
 
     }

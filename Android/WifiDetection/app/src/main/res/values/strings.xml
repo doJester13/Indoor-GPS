@@ -7,4 +7,8 @@
     <string name="reload">Scan</string>
     <string name="upload">Upload Data</string>
     <string name="title_activity_dblist">DBList</string>
+    <string name="up">Up</string>
+    <string name="down">Down</string>
+    <string name="right">Right</string>
+    <string name="left">Left</string>
 </resources>
