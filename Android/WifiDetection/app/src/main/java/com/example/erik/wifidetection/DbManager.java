@@ -38,8 +38,10 @@ public class DbManager {
 
     public boolean delete(long id){
         SQLiteDatabase db=dbhelper.getWritableDatabase();
+        String idQ="";
+        idQ = String.valueOf(id);
         try{
-            if (db.delete(DBHelper.TBL_NAME, DBHelper.FIELD_ID+"=?", new String[]{Long.toString(id)})>0)
+            if (db.delete(DBHelper.TBL_NAME, DBHelper.FIELD_ID + "=" + idQ, null)>0)
                 return true;
             return false;
         } catch (SQLiteException sqle){

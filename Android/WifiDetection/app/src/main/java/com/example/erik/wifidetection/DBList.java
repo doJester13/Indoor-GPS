@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -106,11 +107,35 @@ public class DBList extends AppCompatActivity {
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    insertSurv("prova","prova","prova","prova","prova","prova");
-                } catch (IOException e) {
-                    e.printStackTrace();
+                Cursor x = db.query();
+                String manQ;
+                String proQ;
+                String dtQ;
+                String latQ;
+                String lonQ;
+                String fingerprintQ;
+
+                if (x != null){
+                    if (x.moveToFirst()){
+                        do{
+                            manQ = x.getString(x.getColumnIndex(DBHelper.FIELD_MAN));
+                            proQ = x.getString(x.getColumnIndex(DBHelper.FIELD_PROD));
+                            dtQ = x.getString(x.getColumnIndex(DBHelper.FIELD_DATE));
+                            latQ = x.getString(x.getColumnIndex(DBHelper.FIELD_LAT));
+                            lonQ = x.getString(x.getColumnIndex(DBHelper.FIELD_LON));
+                            fingerprintQ = x.getString(x.getColumnIndex(DBHelper.FIELD_FINGERPRINT));
+                            try {
+                                insertSurv(manQ, proQ, dtQ, latQ, lonQ, fingerprintQ);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            Log.v("DELETE", String.valueOf(db.delete(x.getLong(x.getColumnIndex(DBHelper.FIELD_ID)))));
+                        }while (x.moveToNext());
+                    }
                 }
+                Cursor  y = db.query();
+                adapter.swapCursor(y);
+                adapter.notifyDataSetChanged();
             }
         });
     }
