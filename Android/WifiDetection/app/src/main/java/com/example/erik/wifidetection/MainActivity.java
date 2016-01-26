@@ -15,7 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import org.osmdroid.ResourceProxy;
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     Context context;
     Button reload;
-    TextView mod;
+    EditText tag;
 
     String MANUFACTER;
     String PRODUCT;
@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     String fingerprint;
     double mlat;
     double mlon;
+    String label;
 
     double lat;
     double lon;
@@ -86,14 +87,14 @@ public class MainActivity extends AppCompatActivity {
 
         //init
         reload = (Button) (findViewById(R.id.reloadButton));
-        mod = (TextView) (findViewById(R.id.model));
+        tag = (EditText) (findViewById(R.id.tag));
         context = getApplicationContext();
         db=new DbManager(context);
 
         //get the device information
         MANUFACTER = Build.MANUFACTURER;
         PRODUCT = Build.PRODUCT;
-        mod.setText(MANUFACTER + " " + PRODUCT);
+
 
 
         //WiFi check
@@ -132,11 +133,14 @@ public class MainActivity extends AppCompatActivity {
                 //injecton of data
                 //mylist.setAdapter(adapter);
 
-                //TODO save the listp
+
 
                 //timestamp
                 ts = getCurrentTimeStamp();
-                //mod.append(" " + ts);
+                label = tag.getText().toString();
+                if (label == null){
+                    label = ts;
+                }
                 fingerprint = "";
                 for (int i=0;i<listp.size();i++){
                     fingerprint =listp.get(i)+ ","+ fingerprint;
@@ -154,7 +158,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.v("DATA",String.valueOf(mlon));
                 Log.v("DATA", fingerprint);*/
 
-                db.save(MANUFACTER, PRODUCT, ts, String.valueOf(mlat),String.valueOf(mlon), fingerprint);
+                //save on internal DB
+                db.save(MANUFACTER, PRODUCT, ts, String.valueOf(mlat),String.valueOf(mlon), fingerprint, label);
 
             }
         });
@@ -257,6 +262,9 @@ public class MainActivity extends AppCompatActivity {
         up.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (map.getOverlays().contains(m)){
+                    map.getOverlays().remove(m);
+                }
                 point.setLatitudeE6(point.getLatitudeE6() + (int) (0.00001 * 1E6));
                 m.setPosition(point);
                 m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -267,6 +275,9 @@ public class MainActivity extends AppCompatActivity {
         down.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (map.getOverlays().contains(m)){
+                    map.getOverlays().remove(m);
+                }
                 point.setLatitudeE6(point.getLatitudeE6()-(int)(0.00001*1E6));
                 m.setPosition(point);
                 m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -277,6 +288,9 @@ public class MainActivity extends AppCompatActivity {
         right.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (map.getOverlays().contains(m)){
+                    map.getOverlays().remove(m);
+                }
                 point.setLongitudeE6(point.getLongitudeE6() + (int) (0.00001 * 1E6));
                 m.setPosition(point);
                 m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -287,6 +301,9 @@ public class MainActivity extends AppCompatActivity {
         left.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (map.getOverlays().contains(m)){
+                    map.getOverlays().remove(m);
+                }
                 point.setLongitudeE6(point.getLongitudeE6() - (int)(0.00001*1E6));
                 m.setPosition(point);
                 m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);

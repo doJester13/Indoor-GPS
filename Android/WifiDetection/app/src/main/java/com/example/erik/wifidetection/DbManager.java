@@ -18,15 +18,16 @@ public class DbManager {
         dbhelper = new DBHelper(ctx);
     }
 
-    public void save(String man,String prod, String date, String lat, String lon, String fingerprint){
+    public void save(String man,String prod, String date, String lat, String lon, String fingerprint, String tag){
         SQLiteDatabase db=dbhelper.getWritableDatabase();
         ContentValues cv=new ContentValues();
-        cv.put(DBHelper.FIELD_MAN,man);
-        cv.put(DBHelper.FIELD_PROD,prod);
-        cv.put(DBHelper.FIELD_DATE,date);
-        cv.put(DBHelper.FIELD_LAT,lat);
-        cv.put(DBHelper.FIELD_LON,lon);
-        cv.put(DBHelper.FIELD_FINGERPRINT,fingerprint);
+        cv.put(DBHelper.FIELD_MAN, man);
+        cv.put(DBHelper.FIELD_PROD, prod);
+        cv.put(DBHelper.FIELD_DATE, date);
+        cv.put(DBHelper.FIELD_LAT, lat);
+        cv.put(DBHelper.FIELD_LON, lon);
+        cv.put(DBHelper.FIELD_FINGERPRINT, fingerprint);
+        cv.put(DBHelper.FIELD_TAG, tag);
 
         try{
             db.insert(DBHelper.TBL_NAME,null,cv);

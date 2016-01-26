@@ -13,8 +13,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/reload"/>
-    <TextView
-        android:id="@+id/model"
+    <EditText
+        android:id="@+id/tag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -27,7 +27,7 @@
         android:id="@+id/map"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/model"/>
+        android:layout_below="@+id/tag"/>
 
     <Button
         style="?android:attr/buttonStyleSmall"

@@ -74,6 +74,7 @@ public class DBList extends AppCompatActivity {
                 String lat=crs.getString(crs.getColumnIndex(DBHelper.FIELD_LAT));
                 String lon=crs.getString(crs.getColumnIndex(DBHelper.FIELD_LON));
                 String finger=crs.getString(crs.getColumnIndex(DBHelper.FIELD_FINGERPRINT));
+                String tag=crs.getString(crs.getColumnIndex(DBHelper.FIELD_TAG));
 
 
 
@@ -89,6 +90,8 @@ public class DBList extends AppCompatActivity {
                 txt.setText(lon);
                 txt=(TextView) v.findViewById(R.id.txt_finger);
                 txt.setText(finger);
+                txt=(TextView) v.findViewById(R.id.txt_tag);
+                txt.setText(tag);
 
 
             }
@@ -114,6 +117,7 @@ public class DBList extends AppCompatActivity {
                 String latQ;
                 String lonQ;
                 String fingerprintQ;
+                String tagQ;
 
                 if (x != null){
                     if (x.moveToFirst()){
@@ -124,8 +128,10 @@ public class DBList extends AppCompatActivity {
                             latQ = x.getString(x.getColumnIndex(DBHelper.FIELD_LAT));
                             lonQ = x.getString(x.getColumnIndex(DBHelper.FIELD_LON));
                             fingerprintQ = x.getString(x.getColumnIndex(DBHelper.FIELD_FINGERPRINT));
+                            tagQ = x.getString(x.getColumnIndex(DBHelper.FIELD_TAG));
+
                             try {
-                                insertSurv(manQ, proQ, dtQ, latQ, lonQ, fingerprintQ);
+                                insertSurv(manQ, proQ, dtQ, latQ, lonQ, fingerprintQ, tagQ);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -140,10 +146,10 @@ public class DBList extends AppCompatActivity {
         });
     }
 
-    private void insertSurv(String man, String prod, String date, String lat, String lon, String fingerprint) throws IOException {
+    private void insertSurv(String man, String prod, String date, String lat, String lon, String fingerprint, String tag) throws IOException {
 
         PostTask pt = new PostTask(ctx);
-        pt.execute(man,prod,date,lat,lon,fingerprint);
+        pt.execute(man, prod, date, lat, lon, fingerprint, tag);
     }
 }
 

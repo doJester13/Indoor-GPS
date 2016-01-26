@@ -18,6 +18,7 @@ public class DBHelper extends SQLiteOpenHelper{
     public static final String FIELD_LAT = "lat";
     public static final String FIELD_LON = "lon";
     public static final String FIELD_FINGERPRINT = "fingerprint";
+    public static final String FIELD_TAG = "tag";
 
     public static String DBPATH = "";
 
@@ -35,7 +36,8 @@ public class DBHelper extends SQLiteOpenHelper{
                 FIELD_DATE+" TEXT," +
                 FIELD_LAT+" TEXT," +
                 FIELD_LON+" TEXT," +
-                FIELD_FINGERPRINT+" TEXT)";
+                FIELD_FINGERPRINT+" TEXT," +
+                FIELD_TAG+" TEXT)";
         db.execSQL(q);
     }
 

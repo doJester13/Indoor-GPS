@@ -54,6 +54,7 @@ class PostTask extends AsyncTask<String, String, String> {
             pairs.add(new BasicNameValuePair("lat", data[3]));
             pairs.add(new BasicNameValuePair("lon", data[4]));
             pairs.add(new BasicNameValuePair("fingerprint", data[5]));
+            pairs.add(new BasicNameValuePair("tag", data[6]));
             httppost.setEntity(new UrlEncodedFormEntity(pairs));
             response= httpclient.execute(httppost);
             HttpEntity entity = response.getEntity();
