@@ -3,6 +3,7 @@ package com.example.erik.wifidetection;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -24,7 +25,7 @@ import java.util.List;
 class PostTask extends AsyncTask<String, String, String> {
 
     // Server user register url
-    public static String URL_INSERT = "http://192.168.1.30:80/android_api/insert.php";
+    public  String URL_INSERT = ""; // http://192.168.1.30:80/android_api/insert.php
     private Context mContext;
     ProgressDialog dialog;
 
@@ -33,9 +34,11 @@ class PostTask extends AsyncTask<String, String, String> {
     }
 
     protected void onPreExecute() {
+        getDBURL();
         dialog = new ProgressDialog(mContext);
         dialog.setMessage("Loading...");
         dialog.show();
+
     }
 
     @Override
@@ -46,7 +49,7 @@ class PostTask extends AsyncTask<String, String, String> {
         HttpResponse response = null;
 
         try {
-            //add data
+            //add data to a dictionary key-value
             List<NameValuePair> pairs = new ArrayList<NameValuePair>();
             pairs.add(new BasicNameValuePair("man", data[0]));
             pairs.add(new BasicNameValuePair("prod", data[1]));
@@ -59,10 +62,12 @@ class PostTask extends AsyncTask<String, String, String> {
             response= httpclient.execute(httppost);
             HttpEntity entity = response.getEntity();
             if (entity != null){
-                Log.v("RESPONSE",EntityUtils.toString(entity));
-                //return EntityUtils.toString(entity);
+                String r = EntityUtils.toString(entity);
+                Log.v("RESPONSE",r);
+
+                return r;
             } else{
-              return "";
+              return "0";
             }
 
         } catch (ClientProtocolException e) {
@@ -77,5 +82,12 @@ class PostTask extends AsyncTask<String, String, String> {
 
             dialog.dismiss();
 
+    }
+
+    public void getDBURL(){
+            //Read the pref file
+            SharedPreferences prefs = mContext.getSharedPreferences(SettingsActivity.MY_PREFERENCES, Context.MODE_PRIVATE);;
+            URL_INSERT = prefs.getString(SettingsActivity.URLDB, "");
+            Log.v("PREF",URL_INSERT);
     }
 }

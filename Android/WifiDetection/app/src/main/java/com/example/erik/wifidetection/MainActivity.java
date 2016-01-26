@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 //timestamp
                 ts = getCurrentTimeStamp();
                 label = tag.getText().toString();
-                if (label == null){
+                if (label.compareTo("") == 0){
                     label = ts;
                 }
                 fingerprint = "";
@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //get the location to use as center of mapView
-        /* TODO */
+
         map = (MapView) findViewById(R.id.map);
         final IMapController mapController = map.getController();
         // map need to be initialized
@@ -330,6 +330,11 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
+        if (id == R.id.setting) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            this.startActivity(intent);
+            return true;
+        }
         if (id == R.id.dblist) {
             Intent intent = new Intent(this, DBList.class);
             this.startActivity(intent);

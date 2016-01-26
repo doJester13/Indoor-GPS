@@ -15,6 +15,7 @@
         android:text="@string/reload"/>
     <EditText
         android:id="@+id/tag"
+        android:singleLine="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

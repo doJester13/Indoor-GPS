@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -14,9 +13,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 public class DBList extends AppCompatActivity {
-
+    String output;
     private DbManager db=null;
     private CursorAdapter adapter;
     private ListView listview=null;
@@ -134,8 +134,15 @@ public class DBList extends AppCompatActivity {
                                 insertSurv(manQ, proQ, dtQ, latQ, lonQ, fingerprintQ, tagQ);
                             } catch (IOException e) {
                                 e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
                             }
-                            Log.v("DELETE", String.valueOf(db.delete(x.getLong(x.getColumnIndex(DBHelper.FIELD_ID)))));
+                            if (output.compareTo("1") == 0){
+                                db.delete(x.getLong(x.getColumnIndex(DBHelper.FIELD_ID)));
+
+                            }
                         }while (x.moveToNext());
                     }
                 }
@@ -146,10 +153,11 @@ public class DBList extends AppCompatActivity {
         });
     }
 
-    private void insertSurv(String man, String prod, String date, String lat, String lon, String fingerprint, String tag) throws IOException {
+    private void insertSurv(String man, String prod, String date, String lat, String lon, String fingerprint, String tag) throws IOException, ExecutionException, InterruptedException {
 
         PostTask pt = new PostTask(ctx);
-        pt.execute(man, prod, date, lat, lon, fingerprint, tag);
+        output = pt.execute(man, prod, date, lat, lon, fingerprint, tag).get();
+
     }
 }
 
