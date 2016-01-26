@@ -9,6 +9,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -32,6 +33,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
     Context context;
     Button reload;
+    Button play;
+    EditText time;
     EditText tag;
 
     String MANUFACTER;
@@ -55,7 +60,13 @@ public class MainActivity extends AppCompatActivity {
     // DB Manager
     private DbManager db=null;
 
-    // All static variables
+   //timer
+    Timer timer;
+    TimerTask timerTask;
+    final Handler handler = new Handler();
+    boolean isStarted = false;
+
+
     String URL = "";
 
     //list of String
@@ -86,8 +97,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_list);
 
         //init
-        reload = (Button) (findViewById(R.id.reloadButton));
-        tag = (EditText) (findViewById(R.id.tag));
+        reload = (Button) findViewById(R.id.reloadButton);
+        play = (Button) findViewById(R.id.timerButton);
+        tag = (EditText) findViewById(R.id.tag);
+        time = (EditText) findViewById(R.id.timerEdit);
         context = getApplicationContext();
         db=new DbManager(context);
 
@@ -110,57 +123,26 @@ public class MainActivity extends AppCompatActivity {
         //final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listp);
 
 
+
         reload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                singleScan();
+            }
+        });
 
-                listp.clear();
-                if (mWifiManager.isWifiEnabled()) {
-                    if (mWifiManager.startScan()) {
-                        //List of available APs
-                        wifiList = mWifiManager.getScanResults();
-                        if (wifiList != null && !wifiList.isEmpty()) {
-                            for (ScanResult scan : wifiList) {
-                                //int level = WifiManager.calculateSignalLevel(scan.level,20);
-                                //Log.v(scan.BSSID, String.valueOf(level));
-                                //for each connection, add a string in the list
-                                listp.add(scan.BSSID + ": " + scan.level + "dBm");
-                            }
-                        }
-                    }
+        play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!isStarted){
+                    play.setText(R.string.stop);
+                    startTimer(Float.valueOf(time.getText().toString()));
+                    isStarted = true;
+                }else {
+                    play.setText(R.string.play);
+                    stoptimertask(v);
+                    isStarted = false;
                 }
-                //adapter.notifyDataSetChanged();
-                //injecton of data
-                //mylist.setAdapter(adapter);
-
-
-
-                //timestamp
-                ts = getCurrentTimeStamp();
-                label = tag.getText().toString();
-                if (label.compareTo("") == 0){
-                    label = ts;
-                }
-                fingerprint = "";
-                for (int i=0;i<listp.size();i++){
-                    fingerprint =listp.get(i)+ ","+ fingerprint;
-                }
-                if(fingerprint.charAt(fingerprint.length()-1) == ','){
-                    fingerprint = fingerprint.substring(0,fingerprint.length()-1);
-                }
-
-
-                Toast.makeText(context,"Data captured",Toast.LENGTH_SHORT).show();
-                /*Log.v("DATA", MANUFACTER);
-                Log.v("DATA",PRODUCT);
-                Log.v("DATA",ts);
-                Log.v("DATA",String.valueOf(mlat));
-                Log.v("DATA",String.valueOf(mlon));
-                Log.v("DATA", fingerprint);*/
-
-                //save on internal DB
-                db.save(MANUFACTER, PRODUCT, ts, String.valueOf(mlat),String.valueOf(mlon), fingerprint, label);
-
             }
         });
 
@@ -374,6 +356,85 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void startTimer(float t) {
+        //set a new Timer
+        timer = new Timer();
+
+        //initialize the TimerTask's job
+        initializeTimerTask();
+
+        //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
+        timer.schedule(timerTask, 1000,(int)t*1000); //
+    }
+
+    public void initializeTimerTask() {
+
+        timerTask = new TimerTask() {
+            public void run() {
+
+                //use a handler to run a toast that shows the current timestamp
+                handler.post(new Runnable() {
+                    public void run() {
+                        singleScan();
+                    }
+                });
+            }
+        };
+    }
+
+    public void stoptimertask(View v) {
+        //stop the timer, if it's not already null
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
+    public void singleScan(){
+        listp.clear();
+        if (mWifiManager.isWifiEnabled()) {
+            if (mWifiManager.startScan()) {
+                //List of available APs
+                wifiList = mWifiManager.getScanResults();
+                if (wifiList != null && !wifiList.isEmpty()) {
+                    for (ScanResult scan : wifiList) {
+                        //int level = WifiManager.calculateSignalLevel(scan.level,20);
+                        //Log.v(scan.BSSID, String.valueOf(level));
+                        //for each connection, add a string in the list
+                        listp.add(scan.BSSID + ": " + scan.level + "dBm");
+                    }
+                }
+            }
+        }
+
+        //timestamp
+        ts = getCurrentTimeStamp();
+        //label
+        label = tag.getText().toString();
+        if (label.compareTo("") == 0){
+            label = ts;
+        }
+        //fingerprint
+        fingerprint = "";
+        for (int i=0;i<listp.size();i++){
+            fingerprint =listp.get(i)+ ","+ fingerprint;
+        }
+        if(fingerprint.charAt(fingerprint.length()-1) == ','){
+            fingerprint = fingerprint.substring(0,fingerprint.length()-1);
+        }
+
+
+        //Toast.makeText(context,"Data captured",Toast.LENGTH_SHORT).show();
+                /*Log.v("DATA", MANUFACTER);
+                Log.v("DATA",PRODUCT);
+                Log.v("DATA",ts);
+                Log.v("DATA",String.valueOf(mlat));
+                Log.v("DATA",String.valueOf(mlon));
+                Log.v("DATA", fingerprint);*/
+
+        //save on internal DB
+        db.save(MANUFACTER, PRODUCT, ts, String.valueOf(mlat),String.valueOf(mlon), fingerprint, label);
+    }
 
 
 

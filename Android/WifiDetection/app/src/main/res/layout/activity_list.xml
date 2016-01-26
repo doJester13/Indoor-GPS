@@ -13,6 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/reload"/>
+
     <EditText
         android:id="@+id/tag"
         android:singleLine="true"
@@ -22,13 +23,38 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/reloadButton"/>
+        android:layout_below="@+id/reloadButton"
+        android:hint="@string/tag" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:ems="10"
+        android:id="@+id/timerEdit"
+        android:layout_below="@+id/tag"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:hint="@string/timer" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/play"
+        android:id="@+id/timerButton"
+        android:layout_below="@+id/tag"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_toRightOf="@+id/timerEdit"
+        android:layout_toEndOf="@+id/timerEdit" />
 
     <org.osmdroid.views.MapView
         android:id="@+id/map"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/tag"/>
+        android:layout_below="@+id/timerButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -69,6 +95,8 @@
         android:layout_below="@+id/buttonUp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+
 
     <!-- android:layout_height="700px"-->
 
