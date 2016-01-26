@@ -20,10 +20,9 @@ class DB_Functions {
     /**
      * Storing new survey
      */
-    public function storeSurv($man, $prod, $dt, $lat, $lon, $fingerprint) {
-
-        $stmt = $this->conn->prepare("INSERT INTO surveys(manufact, prod, dt, lat, lon, fingerprint) VALUES(?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $man, $prod, $dt, $lat, $lon, $fingerprint);
+    public function storeSurv($man, $prod, $dt, $lat, $lon, $fingerprint, $tag) {
+        $stmt = $this->conn->prepare("INSERT INTO surveys(manufact, prod, dt, lat, lon, fingerprint, tag) VALUES(?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssssss", $man, $prod, $dt, $lat, $lon, $fingerprint, $tag);
         $result = $stmt->execute();
         $stmt->close();
  

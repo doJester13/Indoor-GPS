@@ -6,7 +6,7 @@ $db = new DB_Functions();
 // json response array
 $response = array("error" => FALSE);
  
-if (isset($_POST['man']) && isset($_POST['prod']) && isset($_POST['dt'])&& isset($_POST['lat']) && isset($_POST['lon']) && isset($_POST['fingerprint'])) {
+if (isset($_POST['man']) && isset($_POST['prod']) && isset($_POST['dt'])&& isset($_POST['lat']) && isset($_POST['lon']) && isset($_POST['fingerprint']) && isset($_POST['tag'])) {
     
     // receiving the post params
     $man = $_POST['man'];
@@ -15,10 +15,11 @@ if (isset($_POST['man']) && isset($_POST['prod']) && isset($_POST['dt'])&& isset
     $lat = $_POST['lat'];
     $lon = $_POST['lon'];
     $fingerprint = $_POST['fingerprint'];
+    $tag = $_POST['tag'];
  
 
     // create a new survey
-    $survey = $db->storeSurv($man, $prod, $dt, $lat, $lon, $fingerprint);
+    $survey = $db->storeSurv($man, $prod, $dt, $lat, $lon, $fingerprint, $tag);
     if ($survey) { 
         // survey stored successfully
         /*$response["error"] = FALSE;
