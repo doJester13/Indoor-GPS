@@ -3,6 +3,8 @@ package com.example.erik.wifidetection;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -14,13 +16,20 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class DBList extends AppCompatActivity {
+
+    private static final int QUERY_COMPLETE = 0;
+    Handler handler;
+
     String output;
     private DbManager db=null;
     private CursorAdapter adapter;
     private ListView listview=null;
     Context ctx;
+    PostTask pt;
 
 
     private View.OnClickListener clickListener=new View.OnClickListener()
@@ -41,6 +50,7 @@ public class DBList extends AppCompatActivity {
         setContentView(R.layout.activity_dblist);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -56,6 +66,7 @@ public class DBList extends AppCompatActivity {
         db=new DbManager(this);
         TextView dbpath=(TextView) findViewById(R.id.path);
         dbpath.setText(DBHelper.DBPATH);
+
 
 
         listview=(ListView) findViewById(R.id.DB_Entry);
@@ -106,57 +117,128 @@ public class DBList extends AppCompatActivity {
 
         listview.setAdapter(adapter);
 
+
+        Button delete = (Button)findViewById(R.id.deleteAll);
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Cursor x = db.query();
+                        if (x != null) {
+                            if (x.moveToFirst()) {
+                                do {
+                                    db.delete(x.getLong(x.getColumnIndex(DBHelper.FIELD_ID)));
+                                } while (x.moveToNext());
+                            }
+                        }
+                        //send message to handler
+                        Message msg = Message.obtain();
+                        msg.what = QUERY_COMPLETE;
+                        handler.sendMessage(msg);
+                    }
+
+                }).start();
+
+                handler = new Handler() {
+                    @Override
+                    public void handleMessage(Message msg) {
+                        switch (msg.what) {
+                            case QUERY_COMPLETE:
+                                //when the message arrive, update the UI
+                                Cursor y = db.query();
+                                adapter.swapCursor(y);
+                                adapter.notifyDataSetChanged();
+                                break;
+
+                        }
+                    }
+                };
+
+            }
+        });
+
         Button upload = (Button)findViewById(R.id.upload);
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Cursor x = db.query();
-                String manQ;
-                String proQ;
-                String dtQ;
-                String latQ;
-                String lonQ;
-                String fingerprintQ;
-                String tagQ;
 
-                if (x != null){
-                    if (x.moveToFirst()){
-                        do{
-                            manQ = x.getString(x.getColumnIndex(DBHelper.FIELD_MAN));
-                            proQ = x.getString(x.getColumnIndex(DBHelper.FIELD_PROD));
-                            dtQ = x.getString(x.getColumnIndex(DBHelper.FIELD_DATE));
-                            latQ = x.getString(x.getColumnIndex(DBHelper.FIELD_LAT));
-                            lonQ = x.getString(x.getColumnIndex(DBHelper.FIELD_LON));
-                            fingerprintQ = x.getString(x.getColumnIndex(DBHelper.FIELD_FINGERPRINT));
-                            tagQ = x.getString(x.getColumnIndex(DBHelper.FIELD_TAG));
 
-                            try {
-                                insertSurv(manQ, proQ, dtQ, latQ, lonQ, fingerprintQ, tagQ);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Cursor x = db.query();
+
+                        String manQ;
+                        String proQ;
+                        String dtQ;
+                        String latQ;
+                        String lonQ;
+                        String fingerprintQ;
+                        String tagQ;
+
+                        if (x != null){
+                            if (x.moveToFirst()){
+                                do{
+                                    manQ = x.getString(x.getColumnIndex(DBHelper.FIELD_MAN));
+                                    proQ = x.getString(x.getColumnIndex(DBHelper.FIELD_PROD));
+                                    dtQ = x.getString(x.getColumnIndex(DBHelper.FIELD_DATE));
+                                    latQ = x.getString(x.getColumnIndex(DBHelper.FIELD_LAT));
+                                    lonQ = x.getString(x.getColumnIndex(DBHelper.FIELD_LON));
+                                    fingerprintQ = x.getString(x.getColumnIndex(DBHelper.FIELD_FINGERPRINT));
+                                    tagQ = x.getString(x.getColumnIndex(DBHelper.FIELD_TAG));
+
+                                    try {
+                                        insertSurv(manQ, proQ, dtQ, latQ, lonQ, fingerprintQ, tagQ);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (TimeoutException e) {
+                                        e.printStackTrace();
+                                    }
+                                    if (output.compareTo("1") == 0){
+                                        db.delete(x.getLong(x.getColumnIndex(DBHelper.FIELD_ID)));
+
+                                    }
+                                }while (x.moveToNext());
                             }
-                            if (output.compareTo("1") == 0){
-                                db.delete(x.getLong(x.getColumnIndex(DBHelper.FIELD_ID)));
-
-                            }
-                        }while (x.moveToNext());
+                        }
+                        //send message to handler
+                        Message msg = Message.obtain();
+                        msg.what = QUERY_COMPLETE;
+                        handler.sendMessage(msg);
                     }
-                }
-                Cursor  y = db.query();
-                adapter.swapCursor(y);
-                adapter.notifyDataSetChanged();
+
+                }).start();
+
+                handler = new Handler(){
+                    @Override
+                    public void handleMessage(Message msg) {
+                        switch(msg.what){
+                            case QUERY_COMPLETE:
+                                //when the message arrive, update the UI
+                                Cursor  y = db.query();
+                                adapter.swapCursor(y);
+                                adapter.notifyDataSetChanged();
+                                break;
+
+                        }
+                    }
+                };
+
             }
         });
     }
 
-    private void insertSurv(String man, String prod, String date, String lat, String lon, String fingerprint, String tag) throws IOException, ExecutionException, InterruptedException {
+    private void insertSurv(String man, String prod, String date, String lat, String lon, String fingerprint, String tag) throws IOException, ExecutionException, InterruptedException, TimeoutException {
 
-        PostTask pt = new PostTask(ctx);
-        output = pt.execute(man, prod, date, lat, lon, fingerprint, tag).get();
+        pt = new PostTask(ctx);
+        output = pt.execute(man, prod, date, lat, lon, fingerprint, tag).get(5000, TimeUnit.MILLISECONDS);
 
     }
 }

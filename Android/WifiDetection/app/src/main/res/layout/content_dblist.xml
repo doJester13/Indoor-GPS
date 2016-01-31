@@ -14,8 +14,14 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
     <Button
-        android:id="@+id/upload"
+        android:id="@+id/deleteAll"
         android:layout_below="@+id/path"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/deleteAll"/>
+    <Button
+        android:id="@+id/upload"
+        android:layout_below="@+id/deleteAll"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/upload"/>
@@ -24,4 +30,5 @@
         android:layout_below="@+id/upload"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
+
 </RelativeLayout>

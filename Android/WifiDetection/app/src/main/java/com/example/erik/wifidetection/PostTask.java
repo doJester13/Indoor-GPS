@@ -1,7 +1,6 @@
 package com.example.erik.wifidetection;
 
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -27,17 +26,20 @@ class PostTask extends AsyncTask<String, String, String> {
     // Server user register url
     public  String URL_INSERT = ""; // http://192.168.1.30:80/android_api/insert.php
     private Context mContext;
-    ProgressDialog dialog;
+    //ProgressDialog dialog;
+    SharedPreferences prefs;
 
     public PostTask(Context c){
         mContext = c;
+
     }
 
     protected void onPreExecute() {
+
+        //dialog = new ProgressDialog(mContext);
+        //dialog.setMessage("Loading...");
+        //dialog.show();
         getDBURL();
-        dialog = new ProgressDialog(mContext);
-        dialog.setMessage("Loading...");
-        dialog.show();
 
     }
 
@@ -80,13 +82,13 @@ class PostTask extends AsyncTask<String, String, String> {
 
     protected void onPostExecute(String res) {
 
-            dialog.dismiss();
+           // dialog.dismiss();
 
     }
 
     public void getDBURL(){
             //Read the pref file
-            SharedPreferences prefs = mContext.getSharedPreferences(SettingsActivity.MY_PREFERENCES, Context.MODE_PRIVATE);;
+            prefs = mContext.getSharedPreferences(SettingsActivity.MY_PREFERENCES, Context.MODE_PRIVATE);
             URL_INSERT = prefs.getString(SettingsActivity.URLDB, "");
             Log.v("PREF",URL_INSERT);
     }

@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import org.osmdroid.ResourceProxy;
@@ -128,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 singleScan();
+                Toast.makeText(context,"Data Saved",Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -136,7 +138,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(!isStarted){
                     play.setText(R.string.stop);
-                    startTimer(Float.valueOf(time.getText().toString()));
+                    float interval = Float.valueOf(time.getText().toString());
+                    startTimer(interval);
                     isStarted = true;
                 }else {
                     play.setText(R.string.play);
@@ -236,10 +239,10 @@ public class MainActivity extends AppCompatActivity {
         //Refreshing the map to draw the new overlay
         map.invalidate();
 
-        Button up = (Button) findViewById(R.id.buttonUp);
-        Button down = (Button) findViewById(R.id.buttonDown);
-        Button right = (Button) findViewById(R.id.buttonRight);
-        Button left = (Button) findViewById(R.id.buttonLeft);
+        ImageButton up = (ImageButton) findViewById(R.id.buttonUp);
+        ImageButton down = (ImageButton) findViewById(R.id.buttonDown);
+        ImageButton right = (ImageButton) findViewById(R.id.buttonRight);
+        ImageButton left = (ImageButton) findViewById(R.id.buttonLeft);
 
         up.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -363,8 +366,9 @@ public class MainActivity extends AppCompatActivity {
         //initialize the TimerTask's job
         initializeTimerTask();
 
-        //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
-        timer.schedule(timerTask, 1000,(int)t*1000); //
+        //schedule the timer, TimerTask will run every t * 1000
+        float t1 =t *1000;
+        timer.schedule(timerTask, 1000,(long)t1); //
     }
 
     public void initializeTimerTask() {
@@ -376,6 +380,7 @@ public class MainActivity extends AppCompatActivity {
                 handler.post(new Runnable() {
                     public void run() {
                         singleScan();
+
                     }
                 });
             }

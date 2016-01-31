@@ -6,7 +6,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.widget.Toast;
 
 public class DbManager {
 
@@ -34,7 +33,6 @@ public class DbManager {
         } catch (SQLiteException e){
 
         }
-        Toast.makeText(c,"Data Saved",Toast.LENGTH_SHORT).show();
     }
 
     public boolean delete(long id){

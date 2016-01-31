@@ -56,41 +56,41 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
-    <Button
+    <ImageButton
         style="?android:attr/buttonStyleSmall"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:text="@string/up"
+        android:src="@mipmap/up"
         android:id="@+id/buttonUp"
         android:layout_alignTop="@+id/map"
         android:layout_toRightOf="@+id/buttonLeft"
         android:layout_toEndOf="@+id/buttonLeft" />
 
-    <Button
+    <ImageButton
         style="?android:attr/buttonStyleSmall"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:text="@string/right"
+        android:src="@mipmap/right"
         android:id="@+id/buttonRight"
         android:layout_alignTop="@+id/buttonLeft"
         android:layout_toRightOf="@+id/buttonUp"
         android:layout_toEndOf="@+id/buttonUp" />
 
-    <Button
+    <ImageButton
         style="?android:attr/buttonStyleSmall"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:text="@string/down"
+        android:src="@mipmap/down"
         android:id="@+id/buttonDown"
         android:layout_below="@+id/buttonLeft"
         android:layout_toRightOf="@+id/buttonLeft"
         android:layout_toEndOf="@+id/buttonLeft" />
 
-    <Button
+    <ImageButton
         style="?android:attr/buttonStyleSmall"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:text="@string/left"
+        android:src="@mipmap/left"
         android:id="@+id/buttonLeft"
         android:layout_below="@+id/buttonUp"
         android:layout_alignParentLeft="true"
