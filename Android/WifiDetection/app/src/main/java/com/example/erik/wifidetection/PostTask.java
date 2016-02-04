@@ -25,6 +25,7 @@ class PostTask extends AsyncTask<String, String, String> {
 
     // Server user register url
     public  String URL_INSERT = ""; // http://192.168.1.30:80/android_api/insert.php
+    String INSERT = "insert.php";
     private Context mContext;
     //ProgressDialog dialog;
     SharedPreferences prefs;
@@ -90,6 +91,7 @@ class PostTask extends AsyncTask<String, String, String> {
             //Read the pref file
             prefs = mContext.getSharedPreferences(SettingsActivity.MY_PREFERENCES, Context.MODE_PRIVATE);
             URL_INSERT = prefs.getString(SettingsActivity.URLDB, "");
+            URL_INSERT = URL_INSERT + INSERT;
             Log.v("PREF",URL_INSERT);
     }
 }

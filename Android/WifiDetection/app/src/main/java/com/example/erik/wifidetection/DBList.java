@@ -22,6 +22,7 @@ import java.util.concurrent.TimeoutException;
 public class DBList extends AppCompatActivity {
 
     private static final int QUERY_COMPLETE = 0;
+    private static final int QUERY_COMPLETE_ALL = 1;
     Handler handler;
 
     String output;
@@ -160,11 +161,11 @@ public class DBList extends AppCompatActivity {
             }
         });
 
-        Button upload = (Button)findViewById(R.id.upload);
+        final Button upload = (Button)findViewById(R.id.upload);
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                upload.setEnabled(false);
 
                 new Thread(new Runnable() {
                     @Override
@@ -203,15 +204,18 @@ public class DBList extends AppCompatActivity {
                                     }
                                     if (output.compareTo("1") == 0){
                                         db.delete(x.getLong(x.getColumnIndex(DBHelper.FIELD_ID)));
-
+                                        //send message to handler
+                                        Message msg = Message.obtain();
+                                        msg.what = QUERY_COMPLETE;
+                                        handler.sendMessage(msg);
                                     }
                                 }while (x.moveToNext());
                             }
                         }
-                        //send message to handler
                         Message msg = Message.obtain();
-                        msg.what = QUERY_COMPLETE;
+                        msg.what = QUERY_COMPLETE_ALL;
                         handler.sendMessage(msg);
+
                     }
 
                 }).start();
@@ -226,7 +230,9 @@ public class DBList extends AppCompatActivity {
                                 adapter.swapCursor(y);
                                 adapter.notifyDataSetChanged();
                                 break;
-
+                            case QUERY_COMPLETE_ALL:
+                                upload.setEnabled(true);
+                                break;
                         }
                     }
                 };
