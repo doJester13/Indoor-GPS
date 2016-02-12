@@ -18,6 +18,17 @@
         android:layout_height="wrap_content"
         android:text="@string/track"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/outputText"
+        android:layout_below="@+id/trackButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/trackButton"
+        android:layout_alignEnd="@+id/trackButton" />
+    <!--
     <org.osmdroid.views.MapView
         android:id="@+id/mapRec"
         android:layout_width="fill_parent"
@@ -25,5 +36,5 @@
         android:layout_below="@+id/trackButton"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
-
+    -->
 </RelativeLayout>

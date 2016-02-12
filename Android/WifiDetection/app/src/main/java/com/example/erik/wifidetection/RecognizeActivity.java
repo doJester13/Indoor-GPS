@@ -11,15 +11,19 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
-import org.osmdroid.views.MapView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class RecognizeActivity extends AppCompatActivity {
 
@@ -27,7 +31,7 @@ public class RecognizeActivity extends AppCompatActivity {
     WifiManager mWifiManager;
     List<ScanResult> wifiList;
 
-    MapView map;
+    //MapView map;
 
     final ArrayList<String> listp = new ArrayList<String>();
 
@@ -36,6 +40,11 @@ public class RecognizeActivity extends AppCompatActivity {
     final ITileSource tileSource = new XYTileSource("Mapnik", ResourceProxy.string.mapnik, 15, 19, 2048, ".png",tileList );
 
     String fingerprint;
+
+    String output;
+    RecTask pt;
+    TextView out;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +61,7 @@ public class RecognizeActivity extends AppCompatActivity {
         context = getApplicationContext();
 
         final Button track = (Button)findViewById(R.id.trackButton);
+        out = (TextView)findViewById(R.id.outputText);
 
 
         //WiFi check
@@ -61,7 +71,7 @@ public class RecognizeActivity extends AppCompatActivity {
             mWifiManager.setWifiEnabled(true);
         }
 
-        map = (MapView) findViewById(R.id.map);
+        //map = (MapView) findViewById(R.id.map);
         //final IMapController mapController = map.getController();
 
         //location manager and location listener
@@ -76,6 +86,17 @@ public class RecognizeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 track();
+                try {
+                    sendFingerprint(RecognizeActivity.this, fingerprint, out);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (TimeoutException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -108,6 +129,7 @@ public class RecognizeActivity extends AppCompatActivity {
 
         }
         Log.v("IMPORTANT", fingerprint);
+
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -119,4 +141,16 @@ public class RecognizeActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private void sendFingerprint(Context c, String fingerprint, TextView v) throws IOException, ExecutionException, InterruptedException, TimeoutException {
+
+        pt = new RecTask(c);
+        output = pt.execute(fingerprint).get(5000, TimeUnit.MILLISECONDS);
+        Log.v("OUTPUT",output);
+        output = output.replace("<br>","\n");
+        v.setText(output);
+    }
+
+
+
 }

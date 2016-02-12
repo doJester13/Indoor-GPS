@@ -1,6 +1,7 @@
 package com.example.erik.wifidetection;
 
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -21,25 +22,26 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-class PostTask extends AsyncTask<String, String, String> {
+class RecTask extends AsyncTask<String, String, String> {
 
     // Server user register url
     public  String URL_INSERT = ""; // http://192.168.1.30:80/android_api/insert.php
-    String INSERT = "insert.php";
-    private Context mContext;
-    //ProgressDialog dialog;
+    String INSERT = "entry.php";
+    Context mContext;
+    ProgressDialog dialog;
     SharedPreferences prefs;
 
-    public PostTask(Context c){
+    public RecTask(Context c){
         mContext = c;
+        dialog = new ProgressDialog(mContext);
 
     }
 
     protected void onPreExecute() {
-
+        super.onPreExecute();
         //dialog = new ProgressDialog(mContext);
-        //dialog.setMessage("Loading...");
-        //dialog.show();
+        dialog.setMessage("Loading...");
+        dialog.show();
         getDBURL();
 
     }
@@ -54,13 +56,7 @@ class PostTask extends AsyncTask<String, String, String> {
         try {
             //add data to a dictionary key-value
             List<NameValuePair> pairs = new ArrayList<NameValuePair>();
-            pairs.add(new BasicNameValuePair("man", data[0]));
-            pairs.add(new BasicNameValuePair("prod", data[1]));
-            pairs.add(new BasicNameValuePair("dt", data[2]));
-            pairs.add(new BasicNameValuePair("lat", data[3]));
-            pairs.add(new BasicNameValuePair("lon", data[4]));
-            pairs.add(new BasicNameValuePair("fingerprint", data[5]));
-            pairs.add(new BasicNameValuePair("tag", data[6]));
+            pairs.add(new BasicNameValuePair("fingerprint", data[0]));
             httppost.setEntity(new UrlEncodedFormEntity(pairs));
             response= httpclient.execute(httppost);
             HttpEntity entity = response.getEntity();
@@ -70,7 +66,7 @@ class PostTask extends AsyncTask<String, String, String> {
 
                 return r;
             } else{
-              return "0";
+                return "0";
             }
 
         } catch (ClientProtocolException e) {
@@ -82,14 +78,14 @@ class PostTask extends AsyncTask<String, String, String> {
     }
 
     protected void onPostExecute(String res) {
-           // dialog.dismiss();
+        dialog.dismiss();
     }
 
     public void getDBURL(){
-            //Read the pref file
-            prefs = mContext.getSharedPreferences(SettingsActivity.MY_PREFERENCES, Context.MODE_PRIVATE);
-            URL_INSERT = prefs.getString(SettingsActivity.URLDB, "");
-            URL_INSERT = URL_INSERT + INSERT;
-            Log.v("PREF",URL_INSERT);
+        //Read the pref file
+        prefs = mContext.getSharedPreferences(SettingsActivity.MY_PREFERENCES, Context.MODE_PRIVATE);
+        URL_INSERT = prefs.getString(SettingsActivity.URLDB, "");
+        URL_INSERT = URL_INSERT + INSERT;
+        Log.v("PREF",URL_INSERT);
     }
 }
