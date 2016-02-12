@@ -9,9 +9,10 @@ $response = array("error" => FALSE);
 if (isset($_POST['fingerprint'])) {
 
     $fingerprint = $_POST['fingerprint'];
+    $m = $_POST['m'];
 
 
-    $maj = $db->majorityRule($fingerprint);
+    $maj = $db->leastAvgError($fingerprint,$m);
     if ($maj) { 
 
     } else {
