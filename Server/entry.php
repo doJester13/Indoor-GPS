@@ -12,6 +12,10 @@
 	    //lest avg error use the db entry that have at least m matches
 	    $m = 5;
 
+	    $man = " ";
+	    $prod = " ";
+
+
 
 	    $maj = $db->majorityRule($fingerprint);
 	    if ($maj) { 
@@ -33,6 +37,28 @@
 	    } else {
 
 	    }
+
+
+	    /*$majD = $db->majorityRuleD($fingerprint, $man, $prod);
+	    if ($majD) { 
+
+	    } else {
+
+	    }
+
+	    $weightD = $db->weightedMajorityRuleD($fingerprint, $man, $prod);
+	    if ($weightD) { 
+
+	    } else {
+
+	    }
+
+	    $laeD = $db->leastAvgErrorD($fingerprint, $m, $man, $prod);
+	    if ($laeD) { 
+
+	    } else {
+
+	    }*/
 
 
 

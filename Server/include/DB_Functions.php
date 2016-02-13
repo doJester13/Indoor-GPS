@@ -369,6 +369,202 @@ INSERT INTO foo2 (id,text)
 
     }
 
+    /*-------------------------------------------------------------------------------------------------------------------------------------
+    * -------------------------------------------------------------------------------------------------------------------------------------  
+    *----------------------------------------------------------DEVICE FUNCTIONS------------------------------------------------------------
+    -------------------------------------------------------------------------------------------------------------------------------------*/
+
+    //-------------------------------------------------------------------------------------------------------------------------------------
+
+        public function majorityRuleD($fingerprint, $man, $prod) {
+        echo "majorityRuleD " . $man . " " . $prod ."<br>";
+        $rel = explode(",", $fingerprint);
+        $len = count($rel);
+        $sql = "SELECT s.id, s.lat, s.lon, COUNT(*) AS c FROM surveys AS s, fingerprints AS f WHERE s.id = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";
+
+        for($i = 0; $i<$len; $i++){
+            $input = explode(": ", $rel[$i]);
+            $bssid = mysqli_real_escape_string($this->conn,$input[0]);
+            $power = mysqli_real_escape_string($this->conn,$input[1]);
+            $sql .= "(bssid = '$bssid' AND power = '$power') OR ";
+
+        }
+        $sql = substr($sql,0, -3);
+        $sql .= ") GROUP BY s.id ORDER BY c DESC LIMIT 1";
+        
+        $result = mysqli_query($this->conn,$sql);
+        if (mysqli_num_rows($result)>0) {
+                    while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+                        $id = $row["id"];
+                        $count = $row["c"];
+                        $lat =  $row["lat"];
+                        $lon = $row["lon"];
+                        echo $id . " " . $count ." / lat = ". $lat ." lon = ". $lon . "<br>" ;
+                    }
+                } else {
+                    echo " 0 results <br>";
+                }
+        
+        //echo $sql;
+    }
+
+    public function weightedMajorityRuleD($fingerprint, $man, $prod) {
+        echo "weightedMajorityRuleD " . $man . " " . $prod ." <br>";
+        $powersum = 0;
+        
+        $rel = explode(",", $fingerprint);
+        $len = count($rel);
+        $table = "SELECT s.id, COUNT(*) AS c FROM surveys AS s, fingerprints AS f WHERE s.id = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";
+
+        for($i = 0; $i<$len; $i++){
+            $input = explode(": ", $rel[$i]);
+            $bssid = mysqli_real_escape_string($this->conn,$input[0]);
+            $power = mysqli_real_escape_string($this->conn,$input[1]);
+            $powersum = $powersum + substr($power, 0, -3);
+            $table .= "(bssid = '$bssid' AND power = '$power') OR ";
+
+        }
+        $table = substr($table,0, -3);
+        $table .= ") GROUP BY s.id";
+
+        $sql = " SELECT * FROM (";
+        $sql .= $table;
+        $sql .= ") AS counts WHERE c = ( SELECT MAX(c) FROM (";
+        $sql .= $table;
+        $sql .= ") AS result )";
+
+        $mindiff = abs($powersum);
+        $minid = 0;
+        $result = mysqli_query($this->conn,$sql);
+        if (mysqli_num_rows($result)>0) {
+                    while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+                        $id = $row["id"];
+                        /*$count = $row["c"];
+                        $lat =  $row["lat"];
+                        $lon = $row["lon"];
+                        echo $id . " " .  "<br>" ;*/
+                        $powersumThis = 0;
+                        $request = "SELECT power FROM fingerprints WHERE fid = '$id' " ;
+                        
+                        $resReq = mysqli_query($this->conn,$request);
+                        if(mysqli_num_rows($resReq)> 0 ){
+                            while ($r = mysqli_fetch_array($resReq, MYSQLI_ASSOC)) {
+                                $powersumThis = $powersumThis + substr($r["power"], 0, -3);
+                            }
+                           $diff = abs($powersum - $powersumThis);
+
+                            if($mindiff> $diff){
+                                $mindiff = $diff;
+                                $minid = $id;
+
+                            } 
+                        }
+                        
+                        //echo abs($powersum - $powersumThis) . "<br>";
+                    }
+        } else {
+                    echo " 0 results <br>";
+        }
+
+        if($minid > 0){
+            $newRequest = " SELECT lat, lon FROM surveys WHERE id = '$minid' ";
+            $newResult = mysqli_query($this->conn,$newRequest);
+            if (mysqli_num_rows($newResult) > 0) {
+                while ($row = mysqli_fetch_array($newResult,MYSQLI_ASSOC)) {
+                    $lat = $row["lat"];
+                    $lon = $row["lon"];
+                    echo "$lat" . " " . $lon . "<br>"; 
+                }
+            }
+        }
+
+        //echo $powersum . "<br>";
+        //echo $minid;
+        //echo $sql;
+
+    }
+
+
+    public function leastAvgErrorD($fingerprint, $m, $man, $prod ){
+        echo "leastAvgErrorD " . $man . " " . $prod ." <br>";
+        $ap = array(); 
+        //$po = array();
+
+        $sql = "SELECT * FROM surveys AS s, fingerprints AS f WHERE s.id = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";
+
+        $rel = explode(",", $fingerprint);
+        $len = count($rel);
+        $sum = 0;
+        for($i = 0; $i<$len; $i++){
+            $input = explode(": ", $rel[$i]);
+            $bssid = mysqli_real_escape_string($this->conn,$input[0]);
+            $power = mysqli_real_escape_string($this->conn,$input[1]);
+            $ap[$bssid] =  substr($power, 0, -3);
+            $sum = $sum + substr($power, 0, -3);
+            $sql .= "(bssid = '$bssid') OR ";
+        }
+
+        $sql = substr($sql,0, -3);
+        $m = $m-1;
+        $sql .= "  ) GROUP BY s.id HAVING COUNT(*) > '$m' ";
+
+        //echo $sql;
+
+        $minid = 0;
+        $avg = abs($sum);
+
+        $result = mysqli_query($this->conn,$sql);
+        if (mysqli_num_rows($result)>0) {
+                    while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+                        $id = $row["fid"];
+                        //righe
+                        $powersumThis = 0;
+                        $powersum = 0;
+                        $cont = 0;
+                        $request = "SELECT bssid, power FROM fingerprints WHERE fid = '$id' " ;
+                        $resReq = mysqli_query($this->conn,$request);
+                        if(mysqli_num_rows($resReq)> 0 ){
+                            while ($r = mysqli_fetch_array($resReq, MYSQLI_ASSOC)) {
+                                if(array_key_exists($r["bssid"], $ap)){  
+                                    $powersum = $powersum + array_search($r["bssid"], $ap); //fingerprint
+                                    //echo $powersum;
+                                    $powersumThis = $powersumThis + substr($r["power"], 0, -3); //db
+                                    //echo " " . $powersumThis;
+                                    $cont += 1;
+                                }
+                            } 
+                            if($cont > 0){       
+                                $avg1 = (abs($powersum - $powersumThis) ) / $cont;
+                                if($avg1 < $avg ){
+                                    $avg = $avg1;
+                                    $minid = $id;
+                                }
+                            }
+                            
+
+                        }
+                        
+                        //echo abs($powersum - $powersumThis) . "<br>";
+                    }
+        } else {
+                    echo " 0 results <br>";
+        }
+
+        if($minid > 0){
+            $newRequest = " SELECT lat, lon FROM surveys WHERE id = '$minid' ";
+            $newResult = mysqli_query($this->conn,$newRequest);
+            if (mysqli_num_rows($newResult) > 0) {
+                while ($row = mysqli_fetch_array($newResult,MYSQLI_ASSOC)) {
+                    $lat = $row["lat"];
+                    $lon = $row["lon"];
+                    echo "$lat" . " " . $lon . "<br>"; 
+                }
+            }
+        }
+
+    }
+
+
 
 }
  
