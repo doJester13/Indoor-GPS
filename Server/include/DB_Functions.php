@@ -117,10 +117,6 @@ INSERT INTO foo2 (id,text)
         }
 
 
-
-
-
- 
         // check for successful store
         if ($result) {
             echo $result;
@@ -128,6 +124,17 @@ INSERT INTO foo2 (id,text)
         } else {
             return false;
         }
+    }
+
+
+    public function correct($col, $original, $correction){
+        $sql ="UPDATE surveys SET $col = REPLACE($col,'$original','$correction')";
+        /*$res = mysqli_query($this->conn, $sql);
+        if (mysqli_num_rows($res) > 0) {
+            while ($row = mysqli_fetch_array($res,MYSQLI_ASSOC)) {
+
+            }
+        }*/
     }
 
 
