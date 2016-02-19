@@ -8,7 +8,9 @@ $response = array("error" => FALSE);
  
 
     // create a new survey
-    $r = $db->avg();
-
+    /*$min = $db->min();
+    $max = $db->max();
+    $mid = $db->avg();*/
+    $dev = $db->deviceType();
 
 ?>
