@@ -131,6 +131,34 @@ INSERT INTO foo2 (id,text)
     }
 
 
+    public function randomEntry($x, $y){
+        $rid = rand($x, $y);
+        $sql = "SELECT * FROM surveys WHERE id = '$rid'";
+        $res = mysqli_query($this->conn, $sql);
+        if (mysqli_num_rows($res) > 0) {
+            while ($row = mysqli_fetch_array($res,MYSQLI_ASSOC)) {
+                $fin = $row["fingerprint"];
+                return $fin;
+            }
+        }
+    }
+
+    public function ap(){
+          //$device = array();
+        $sql = " SELECT DISTINCT bssid FROM fingerprints ";
+        $result = mysqli_query($this->conn,$sql);
+        if (mysqli_num_rows($result)>0) {
+            while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
+                        //$device[$row["manufact"]] = $row["prod"];
+                echo $row["bssid"] . "<br>";
+                        //$this->min($row["manufact"], $row["prod"]);
+                        //s$this->avg($row["manufact"], $row["prod"]);
+                        //$this->max($row["manufact"], $row["prod"]);
+            }
+        }
+        //print_r($device);
+    }
+
     public function deviceType(){
         //$device = array();
         $sql = " SELECT DISTINCT manufact, prod FROM surveys ";
@@ -146,6 +174,8 @@ INSERT INTO foo2 (id,text)
         }
         //print_r($device);
     }
+
+   
 
     public function avg($manufact, $prod){
 
@@ -509,11 +539,27 @@ INSERT INTO foo2 (id,text)
 
     //-------------------------------------------------------------------------------------------------------------------------------------
 
-        public function majorityRuleD($fingerprint, $man, $prod) {
-        echo "majorityRuleD " . $man . " " . $prod ."<br>";
+        public function majorityRuleD($fingerprint, $man, $prod, $tabS, $tabF, $diffferent) {
+        echo "majorityRuleD " . $man . " " . $prod . " " . $tabS . " " . $tabF ."<br>";
+
+
+
         $rel = explode(",", $fingerprint);
         $len = count($rel);
-        $sql = "SELECT s.id, s.lat, s.lon, COUNT(*) AS c FROM surveys AS s, fingerprints AS f WHERE s.id = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";
+        if($diffferent == 1){
+            $sql = "SELECT s.id, s.lat, s.lon, COUNT(*) AS c FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact != '$man' AND s.prod != '$prod' AND (";
+
+        }else{
+
+            if(strcmp($man, "all") == 0 ){
+                $sql = "SELECT s.id, s.lat, s.lon, COUNT(*) AS c FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND (";
+            }else{
+                        $sql = "SELECT s.id, s.lat, s.lon, COUNT(*) AS c FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";  
+            }
+  
+        }
+
+        
 
         for($i = 0; $i<$len; $i++){
             $input = explode(": ", $rel[$i]);
@@ -541,13 +587,26 @@ INSERT INTO foo2 (id,text)
         //echo $sql;
     }
 
-    public function weightedMajorityRuleD($fingerprint, $man, $prod) {
-        echo "weightedMajorityRuleD " . $man . " " . $prod ." <br>";
+    public function weightedMajorityRuleD($fingerprint, $man, $prod, $tabS, $tabF, $diffferent) {
+        echo "weightedMajorityRuleD " . $man . " " . $prod . " " . $tabS . " " . $tabF ."<br>";
         $powersum = 0;
         
         $rel = explode(",", $fingerprint);
         $len = count($rel);
-        $table = "SELECT s.id, COUNT(*) AS c FROM surveys AS s, fingerprints AS f WHERE s.id = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";
+        if($diffferent == 1){
+            $table = "SELECT s.fid, COUNT(*) AS c FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact != '$man' AND s.prod != '$prod' AND (";
+
+        }else{
+
+            if(strcmp($man, "all") == 0 ){
+                $table = "SELECT s.fid, COUNT(*) AS c FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND (";
+            }else{
+                $table = "SELECT s.fid, COUNT(*) AS c FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";  
+            }
+
+        }
+
+        //$table = "SELECT s.fid, COUNT(*) AS c FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";
 
         for($i = 0; $i<$len; $i++){
             $input = explode(": ", $rel[$i]);
@@ -567,17 +626,17 @@ INSERT INTO foo2 (id,text)
         $sql .= ") AS result )";
 
         $mindiff = abs($powersum);
-        $minid = 0;
+        $minfid = 0;
         $result = mysqli_query($this->conn,$sql);
         if (mysqli_num_rows($result)>0) {
                     while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-                        $id = $row["id"];
+                        $fid = $row["fid"];
                         /*$count = $row["c"];
                         $lat =  $row["lat"];
                         $lon = $row["lon"];
                         echo $id . " " .  "<br>" ;*/
                         $powersumThis = 0;
-                        $request = "SELECT power FROM fingerprints WHERE fid = '$id' " ;
+                        $request = "SELECT power FROM $tabF WHERE fid = '$fid' " ;
                         
                         $resReq = mysqli_query($this->conn,$request);
                         if(mysqli_num_rows($resReq)> 0 ){
@@ -588,7 +647,7 @@ INSERT INTO foo2 (id,text)
 
                             if($mindiff> $diff){
                                 $mindiff = $diff;
-                                $minid = $id;
+                                $minfid = $fid;
 
                             } 
                         }
@@ -599,8 +658,8 @@ INSERT INTO foo2 (id,text)
                     echo " 0 results <br>";
         }
 
-        if($minid > 0){
-            $newRequest = " SELECT lat, lon FROM surveys WHERE id = '$minid' ";
+        if($minfid > 0){
+            $newRequest = " SELECT lat, lon FROM $tabS WHERE fid = '$minfid' ";
             $newResult = mysqli_query($this->conn,$newRequest);
             if (mysqli_num_rows($newResult) > 0) {
                 while ($row = mysqli_fetch_array($newResult,MYSQLI_ASSOC)) {
@@ -618,12 +677,23 @@ INSERT INTO foo2 (id,text)
     }
 
 
-    public function leastAvgErrorD($fingerprint, $m, $man, $prod ){
-        echo "leastAvgErrorD " . $man . " " . $prod ." <br>";
+    public function leastAvgErrorD($fingerprint, $m, $man, $prod, $tabS, $tabF, $diffferent){
+        echo "leastAvgErrorD " . $man . " " . $prod . " ". $tabS . " ". $tabF ."<br>";
         $ap = array(); 
         //$po = array();
+        if($diffferent == 1){
+            $sql = "SELECT * FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact != '$man' AND s.prod != '$prod' AND (";
 
-        $sql = "SELECT * FROM surveys AS s, fingerprints AS f WHERE s.id = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";
+        }else{
+
+            if(strcmp($man, "all") == 0 ){
+                $sql = "SELECT * FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND (";
+            }else{
+                $sql = "SELECT * FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";  
+            }
+
+        }
+        //$sql = "SELECT * FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";
 
         $rel = explode(",", $fingerprint);
         $len = count($rel);
@@ -641,20 +711,18 @@ INSERT INTO foo2 (id,text)
         $m = $m-1;
         $sql .= "  ) GROUP BY s.id HAVING COUNT(*) > '$m' ";
 
-        //echo $sql;
-
-        $minid = 0;
+        $minfid = 0;
         $avg = abs($sum);
 
         $result = mysqli_query($this->conn,$sql);
         if (mysqli_num_rows($result)>0) {
                     while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) {
-                        $id = $row["fid"];
+                        $fid = $row["fid"];
                         //righe
                         $powersumThis = 0;
                         $powersum = 0;
                         $cont = 0;
-                        $request = "SELECT bssid, power FROM fingerprints WHERE fid = '$id' " ;
+                        $request = "SELECT bssid, power FROM $tabF WHERE fid = '$fid' " ;
                         $resReq = mysqli_query($this->conn,$request);
                         if(mysqli_num_rows($resReq)> 0 ){
                             while ($r = mysqli_fetch_array($resReq, MYSQLI_ASSOC)) {
@@ -670,7 +738,7 @@ INSERT INTO foo2 (id,text)
                                 $avg1 = (abs($powersum - $powersumThis) ) / $cont;
                                 if($avg1 < $avg ){
                                     $avg = $avg1;
-                                    $minid = $id;
+                                    $minfid = $fid;
                                 }
                             }
                             
@@ -683,14 +751,15 @@ INSERT INTO foo2 (id,text)
                     echo " 0 results <br>";
         }
 
-        if($minid > 0){
-            $newRequest = " SELECT lat, lon FROM surveys WHERE id = '$minid' ";
+        if($minfid > 0){
+            $newRequest = " SELECT lat, lon, tag FROM $tabS WHERE fid = '$minfid' ";
             $newResult = mysqli_query($this->conn,$newRequest);
             if (mysqli_num_rows($newResult) > 0) {
                 while ($row = mysqli_fetch_array($newResult,MYSQLI_ASSOC)) {
                     $lat = $row["lat"];
                     $lon = $row["lon"];
-                    echo "$lat" . " " . $lon . "<br>"; 
+                    $tag = $row["tag"];
+                    echo "$lat" . " " . $lon . " " . $tag . "<br>"; 
                 }
             }
         }
