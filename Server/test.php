@@ -3,7 +3,7 @@
 	require_once 'include/DB_Functions.php';
 	$db = new DB_Functions();
 
-	$fingerprint = $db->randomEntry(100,200);
+	$fingerprint = $db->randomEntry(100, 900);
 
 	echo $fingerprint . "<br>";
 
@@ -13,7 +13,7 @@
 
 
 	    //lest avg error use the db entry that have at least m matches
-	    $m = 1;
+	    $m = 10;
 
 	    $man = $_GET['man'];
 	    $prod = $_GET['prod'];
@@ -24,12 +24,12 @@
 			$man = "*";
 			$prod = "*";
 		}*/
-		$minS = "minsurveys";
-		$minF = "minfingerprints";
-		$avgS = "surveysmiddle";
-		$avgF = "fingerprintsmiddle";
-		$maxS = "maxsurveys";
-		$maxF = "maxfingerprints";
+		$minS = "surveysmin";
+		$minF = "fingerprintsmin";
+		$avgS = "surveysavg";
+		$avgF = "fingerprintsavg";
+		$maxS = "surveysmax";
+		$maxF = "fingerprintsmax";
 
 
 		echo "MIN <br>";

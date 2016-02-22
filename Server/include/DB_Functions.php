@@ -137,6 +137,16 @@ INSERT INTO foo2 (id,text)
         }*/
     }
 
+    public function maxID(){
+        $sql = "SELECT id from surveys ORDER BY id DESC LIMIT 1";
+        $result = mysqli_query($this->conn,$sql);
+        if (mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_array($result,MYSQLI_ASSOC)) {
+                $id = $row["id"];
+                return $id;
+            }
+        }
+    }
 
     public function randomEntry($x, $y){
         $rid = rand($x, $y);
@@ -547,7 +557,7 @@ INSERT INTO foo2 (id,text)
     //-------------------------------------------------------------------------------------------------------------------------------------
 
         public function majorityRuleD($fingerprint, $man, $prod, $tabS, $tabF, $diffferent) {
-        echo "majorityRuleD " . $man . " " . $prod . " " . $tabS . " " . $tabF ."<br>";
+        //echo "majorityRuleD " . $man . " " . $prod . " " . $tabS . " " . $tabF ."<br>";
 
 
 
@@ -585,17 +595,19 @@ INSERT INTO foo2 (id,text)
                         $count = $row["c"];
                         $lat =  $row["lat"];
                         $lon = $row["lon"];
-                        echo $id . " " . $count ." / lat = ". $lat ." lon = ". $lon . "<br>" ;
+                        $t = $row["tag"];
+                        //echo $id . " " . $count ." / lat = ". $lat ." lon = ". $lon . "<br>" ;
+                        echo $t . " ";
                     }
                 } else {
-                    echo " 0 results <br>";
+                    echo " 0 results ";
                 }
         
         //echo $sql;
     }
 
     public function weightedMajorityRuleD($fingerprint, $man, $prod, $tabS, $tabF, $diffferent) {
-        echo "weightedMajorityRuleD " . $man . " " . $prod . " " . $tabS . " " . $tabF ."<br>";
+        //echo "weightedMajorityRuleD " . $man . " " . $prod . " " . $tabS . " " . $tabF ."<br>";
         $powersum = 0;
         
         $rel = explode(",", $fingerprint);
@@ -648,7 +660,7 @@ INSERT INTO foo2 (id,text)
                         $resReq = mysqli_query($this->conn,$request);
                         if(mysqli_num_rows($resReq)> 0 ){
                             while ($r = mysqli_fetch_array($resReq, MYSQLI_ASSOC)) {
-                                $powersumThis = $powersumThis + substr($r["power"], 0, -3);
+                                $powersumThis = $powersumThis + $r["power"];
                             }
                            $diff = abs($powersum - $powersumThis);
 
@@ -662,17 +674,19 @@ INSERT INTO foo2 (id,text)
                         //echo abs($powersum - $powersumThis) . "<br>";
                     }
         } else {
-                    echo " 0 results <br>";
+                    echo " 0 results  ";
         }
 
         if($minfid > 0){
-            $newRequest = " SELECT lat, lon FROM $tabS WHERE fid = '$minfid' ";
+            $newRequest = " SELECT lat, lon, tag FROM $tabS WHERE fid = '$minfid' ";
             $newResult = mysqli_query($this->conn,$newRequest);
             if (mysqli_num_rows($newResult) > 0) {
                 while ($row = mysqli_fetch_array($newResult,MYSQLI_ASSOC)) {
                     $lat = $row["lat"];
                     $lon = $row["lon"];
-                    echo "$lat" . " " . $lon . "<br>"; 
+                    $t = $row["tag"];
+                    //echo "$lat" . " " . $lon . "<br>"; 
+                    echo $t . " ";
                 }
             }
         }
@@ -685,18 +699,18 @@ INSERT INTO foo2 (id,text)
 
 
     public function leastAvgErrorD($fingerprint, $m, $man, $prod, $tabS, $tabF, $diffferent){
-        echo "leastAvgErrorD " . $man . " " . $prod . " ". $tabS . " ". $tabF ."<br>";
+        //echo "leastAvgErrorD " . $man . " " . $prod . " ". $tabS . " ". $tabF ."<br>";
         $ap = array(); 
         //$po = array();
         if($diffferent == 1){
-            $sql = "SELECT * FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact != '$man' AND s.prod != '$prod' AND (";
+            $sql = "SELECT *, count(tag) as c FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact != '$man' AND s.prod != '$prod' AND (";
 
         }else{
 
             if(strcmp($man, "all") == 0 ){
-                $sql = "SELECT * FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND (";
+                $sql = "SELECT *, count(tag) as c FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND (";
             }else{
-                $sql = "SELECT * FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";  
+                $sql = "SELECT *, count(tag) as c FROM $tabS AS s, $tabF AS f WHERE s.fid = f.fid AND s.manufact = '$man' AND s.prod = '$prod' AND (";  
             }
 
         }
@@ -716,8 +730,9 @@ INSERT INTO foo2 (id,text)
 
         $sql = substr($sql,0, -3);
         $m = $m-1;
-        $sql .= "  ) GROUP BY s.id HAVING COUNT(*) > '$m' ";
-
+        $sql .= "  ) GROUP BY s.fid HAVING COUNT(*) > '$m' ORDER BY c DESC ";
+        //echo $sql;
+        //print_r($ap);
         $minfid = 0;
         $avg = abs($sum);
 
@@ -729,6 +744,7 @@ INSERT INTO foo2 (id,text)
                         $powersumThis = 0;
                         $powersum = 0;
                         $cont = 0;
+                        $summdiff = 0;
                         $request = "SELECT bssid, power FROM $tabF WHERE fid = '$fid' " ;
                         $resReq = mysqli_query($this->conn,$request);
                         if(mysqli_num_rows($resReq)> 0 ){
@@ -736,13 +752,18 @@ INSERT INTO foo2 (id,text)
                                 if(array_key_exists($r["bssid"], $ap)){  
                                     $powersum = $powersum + array_search($r["bssid"], $ap); //fingerprint
                                     //echo $powersum;
-                                    $powersumThis = $powersumThis + substr($r["power"], 0, -3); //db
+                                    $powersumThis = $powersumThis + $r["power"]; //db
                                     //echo " " . $powersumThis;
+                                    $summdiff = $summdiff + abs($ap[$r["bssid"]]) - abs($r["power"]);
+                                    //echo $r["bssid"] . " " . $r["power"] . " " . array_search($r["bssid"], $ap). " " . $summdiff. " " . abs($r["power"]) . "<br>";
                                     $cont += 1;
                                 }
                             } 
                             if($cont > 0){       
-                                $avg1 = (abs($powersum - $powersumThis) ) / $cont;
+                                //$avg1 = abs((abs($powersum - $powersumThis) ) / $len);
+                                $avg1 = $summdiff/$cont;
+                                //echo $avg . " " . $avg1 . " " . $summdiff . " " . $cont  . "<br>";
+                                //echo "-----------------------------------" . "<br>";
                                 if($avg1 < $avg ){
                                     $avg = $avg1;
                                     $minfid = $fid;
@@ -759,14 +780,16 @@ INSERT INTO foo2 (id,text)
         }
 
         if($minfid > 0){
-            $newRequest = " SELECT lat, lon, tag FROM $tabS WHERE fid = '$minfid' ";
+            $newRequest = " SELECT lat, lon, tag FROM $tabS WHERE fid = '$minfid' LIMIT 1";
             $newResult = mysqli_query($this->conn,$newRequest);
             if (mysqli_num_rows($newResult) > 0) {
                 while ($row = mysqli_fetch_array($newResult,MYSQLI_ASSOC)) {
                     $lat = $row["lat"];
                     $lon = $row["lon"];
                     $tag = $row["tag"];
-                    echo "$lat" . " " . $lon . " " . $tag . "<br>"; 
+                    //echo "$lat" . " " . $lon . " " . $tag . "<br>"; 
+                    echo "prova";
+                    echo  $tag . "<br>";
                 }
             }
         }
