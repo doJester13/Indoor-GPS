@@ -1,0 +1,5 @@
+lanciare la funzione correct
+lanciare funzione ap per avere tutti i bssid
+inserirli in una struttura dati [$arr]
+creare le tablle per avg min e max
+lanciare deviceType che lancerá avg, min, max (avg)

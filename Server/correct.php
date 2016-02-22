@@ -17,6 +17,4 @@
 	$cor = $db->correct($tag, "cc", "cr -");
 	
 
-
-
 ?>
