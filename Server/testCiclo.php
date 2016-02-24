@@ -2,7 +2,6 @@
  
 	require_once 'include/DB_Functions.php';
 	$db = new DB_Functions();
-
 	$maxId = $db->maxID();
 	$c = $_GET['c'];
 
@@ -140,6 +139,7 @@
 
 
 	for($i = 0;$i<$c;$i++){
+		echo "RUN";
 		singleTest();
 	}
 ?>
